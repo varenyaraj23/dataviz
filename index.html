@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>	
+  <title></title>
+  <meta charset="utf-8">
+  <script src="//d3js.org/d3.v4.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="main.css">
+  	<style>
+  		#emissionsTooltip {
+  			position: absolute;
+  			font-size: 16px;
+  			width: 80px;
+  			height: 150px;
+  			padding: 10px;
+  			border-radius: 4px;
+  			background-color: white;
+  		}
+  		#popTooltip {
+  			position: absolute;
+  			font-size: 16px;
+  			width: 80px;
+  			height: 50px;
+  			padding: 10px;
+  			border-radius: 4px;
+  			background-color: white;
+  		}
+
+  		#title {
+  			font-size: 36px;
+			margin-left: 2.5em;
+			margin-top:1.5em;
+			border-width: 2px;
+			color: #1620B1;
+			font-weight: bold;
+  		}
+
+  		#background {
+			margin-left: 4.5em;
+			margin-right:10.5em;
+			margin-top:.5em;
+			border-width: 2px;
+			color: grey;
+			/*font-weight: bold;*/
+			font-size: 20px;
+  		}
+	</style>
+</head>
+<body>
+<p id="title">Rise of CO2 emission in India from 1959 – 2014</p>
+
+<p id="background">
+	Background:
+Approximately 70% of 1.3 billion people of Indian population live rural areas. Nearly 70% of rural population rely on solid fuel feedstock like coal and peat for their cooking needs. India contributes to 5% of human-sourced carbon dioxide emission; compared to China's 24 percent share. India's coal-fired, oil-fired and natural gas-fired thermal power plants are inefficient and offer significant potential for CO2 emission. Compared to the average emissions from coal-fired, oil-fired and natural gas-fired thermal power plants in European Union (EU-27) countries, India's thermal power plants emit 50 to 120 percent more CO2 per kWh produced.</p>
+	
+<svg id="emissions" width="1400" height="360"></svg>
+<svg id="pop" width="1400" height="360"></svg>
+<div id="emissionsTooltip"></div>
+<div id="popTooltip"></div>
+
+<script>
+$("#emissions").mousemove(function(event)
+{
+  $("#emissionsBar").remove();
+  emissionsBar(event.pageX);
+  $("#popBar").remove();
+  popBar(event.pageX);
+  $('#emissionsTooltip').css({top: 400, left: event.pageX + 20, position:'absolute'});
+  $('#popTooltip').css({top: 800, left: event.pageX + 20, position:'absolute'});
+  
+  var emis = emissionsData.filter(d => { return century(d.year.getYear()) == year })[0]
+  var pop = populationData.filter(d => { return century(d.year.getYear()) == year })[0]
+  $('#emissionsTooltip').html("<div>Other: " + emis.other +" <br/> Gas: " + emis.gas + " <br/> Liquid: " + emis.liquid + " <br/> Solid: " + emis.solid + " <br/>  </div>")
+  $('#popTooltip').html("<div>Population: " + pop.population + "</div>")
+});
+$("#pop").mousemove(function(event)
+{
+  $("#emissionsBar").remove();
+  emissionsBar(event.pageX);
+  $("#popBar").remove();
+  popBar(event.pageX);
+  $('#emissionsTooltip').css({top: 400, left: event.pageX + 20, position:'absolute'});
+  $('#popTooltip').css({top: 800, left: event.pageX + 20, position:'absolute'});
+
+});
+var year, emissionsData, populationData;
+
+var svg1 = d3.select("#emissions"),
+    margin1 = {top: 20, right: 40, bottom: 30, left: 90},
+    width1 = svg1.attr("width") - margin1.left - margin1.right,
+    height1 = svg1.attr("height") - margin1.top - margin1.bottom;
+
+var parseDate1 = d3.timeParse("%Y");
+
+var x1 = d3.scaleTime().range([0, width1]),
+    y1 = d3.scaleLinear().domain([0, 2500000]).range([height1, 0]),
+    // z1 = d3.scaleOrdinal(d3.schemeCategory10);
+
+    z1 = d3.scaleOrdinal(['#86FFCD','#C0B2D8', '#FF988C', '#A6E3FF']);
+
+var stack1 = d3.stack();
+
+var area1 = d3.area()
+    .x(function(d, i) { return x1(d.data.year); })
+    .y0(function(d) { return y1(d[0]); })
+    .y1(function(d) { return y1(d[1]); });
+
+var g1 = svg1.append("g")
+    .attr("transform", "translate(" + margin1.left + "," + margin1.top + ")");
+
+function emissionsBar(x) {
+  d3.select('#emissions').append('rect')
+    .attr('id', 'emissionsBar')
+    .attr('height', height1+30)
+    .attr('width', 2)
+    .attr('x', x)
+    .attr('y', 0);
+}
+
+function popBar(x) {
+  d3.select('#pop').append('rect')
+    .attr('id', 'popBar')
+    .attr('height', height1)
+    .attr('width', 2)
+    .attr('x', x)
+    .attr('y', margin1.bottom);
+}
+
+function century(x){
+  x<100 ? y = '19'+x : y = '20'+(x.toString().substring(1));
+  return y;
+}
+
+
+d3.csv("data/data.csv", type1, function(error, data) {
+  // console.log("HERE", data);
+  if (error) throw error;
+  emissionsData = data;
+
+  var keys = data.columns.slice(1);
+
+  x1.domain(d3.extent(data, function(d) { return d.year; }));
+  z1.domain(keys);
+  stack1.keys(keys);
+
+  var layer = g1.selectAll(".layer1")
+    .data(stack1(data))
+    .enter().append("g")
+      .attr("class", "layer1");
+
+  layer.append("path")
+      .attr("class", "area1")
+      .style("fill", function(d) { return z1(d.key); })
+      .attr("d", area1)
+      .on("mousemove", function(d, i){
+      	mouse = d3.mouse(this);
+        mousex = mouse[0];
+        var invertedx = x.invert(mousex);
+        var xDate = century(invertedx.getYear());
+		d.forEach(function(f){
+          var y = (f.data.year.toString()).split(' ')[3];
+		  if (xDate == y){
+		  	year = y
+			d3.select("#emissionsTooltip").html("<div>Other: " + f.data.other +" <br/> Gas: " + f.data.gas + " <br/> Liquid: " + f.data.liquid +  " <br/> Solid: " + f.data.solid +"</div>")
+          }
+        });
+      })
+
+  layer.filter(function(d) { return d[d.length - 1][1] - d[d.length - 1][0] > 0.01; })
+    .append("text")
+      .attr("x", width1 + 5)
+      .attr("y", function(d) { return y1((d[d.length - 1][0] + d[d.length - 1][1]) / 2); })
+      .attr("dy", ".35em")
+      .style("font", "10px sans-serif")
+      .style("text-anchor", "start")
+      .text(function(d) { return d.key; });
+
+  g1.append("g")
+      .attr("class", "axis axis--x1")
+      .attr("transform", "translate(0," + height1 + ")")
+      .call(d3.axisBottom(x1));
+
+  g1.append("g")
+      .attr("class", "axis axis--y1")
+      .call(d3.axisLeft(y1).ticks(10));
+});
+
+var svg = d3.select("#pop"),
+    margin = {top: 20, right: 40, bottom: 30, left: 90},
+    width = svg.attr("width") - margin.left - margin.right,
+    height = svg.attr("height") - margin.top - margin.bottom;
+
+var parseDate = d3.timeParse("%Y");
+
+var x = d3.scaleTime().range([0, width]),
+    y = d3.scaleLinear().domain([0, 1400000000]).range([height, 0]),
+    z = d3.scaleOrdinal(['#EEB600']);
+
+var stack = d3.stack();
+
+var area = d3.area()
+    .x(function(d, i) { return x(d.data.year); })
+    .y0(function(d) { return y(d[0]); })
+    .y1(function(d) { return y(d[1]); });
+
+var g = svg.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("data/pop.csv", type, function(error, data) {
+  if (error) throw error;
+  populationData = data;
+
+  var keys = data.columns.slice(1);
+
+  x.domain(d3.extent(data, function(d) { return d.year; }));
+  z.domain(keys);
+  stack.keys(keys);
+
+  var layer = g.selectAll(".layer")
+    .data(stack(data))
+    .enter().append("g")
+      .attr("class", "layer");
+
+  layer.append("path")
+      .attr("class", "area")
+      .style("fill", function(d) { return z(d.key); })
+      .attr("d", area)
+      .on("mousemove", function(d, i){
+      	mouse = d3.mouse(this);
+        mousex = mouse[0];
+        var invertedx = x.invert(mousex);
+        var xDate = century(invertedx.getYear());
+		d.forEach(function(f){
+          var y = (f.data.year.toString()).split(' ')[3];
+		  if (xDate == y){
+		  	year = y
+			d3.select("#popTooltip").html("<div>Other: " + f.data.population + "</div>")
+          }
+        });
+      })
+
+  layer.filter(function(d) { return d[d.length - 1][1] - d[d.length - 1][0] > 0.01; })
+    .append("text")
+      .attr("x", width+5)
+      .attr("y", function(d) { return y((d[d.length - 1][0] + d[d.length - 1][1]) / 2); })
+      .attr("dy", ".35em")
+      .style("font", "10px sans-serif")
+      .style("text-anchor", "start")
+      .text(function(d) { return d.key; });
+
+  g.append("g")
+      .attr("class", "axis axis--x")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+  g.append("g")
+      .attr("class", "axis axis--y")
+      .call(d3.axisLeft(y).ticks(10));
+});
+
+function type1(d, i, columns) {
+  d.year = parseDate1(d.year);
+  for (var i = 1 , n = columns.length; i < n; ++i) d[columns[i]] = d[columns[i]];
+  return d;
+}
+
+function type(d, i, columns) {
+  d.year = parseDate(d.year);
+  for (var i = 1 , n = columns.length; i < n; ++i) d[columns[i]] = d[columns[i]];
+  return d;
+}
+
+</script>
+</body>
+</html>
