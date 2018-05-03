@@ -5,44 +5,52 @@
   <meta charset="utf-8">
   <script src="//d3js.org/d3.v4.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Belgrano" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Playfair+Display" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="main.css">
   	<style>
   		#emissionsTooltip {
   			position: absolute;
   			font-size: 16px;
-  			width: 80px;
-  			height: 150px;
-  			padding: 10px;
+  			width: 100px;
+  			/*height: 260px;*/
+  			padding: 12px 10px;
   			border-radius: 4px;
-  			background-color: white;
+  			background-color: #F3FBFF;
+        opacity: .8;
   		}
+
   		#popTooltip {
   			position: absolute;
   			font-size: 16px;
-  			width: 80px;
-  			height: 50px;
+  			/*width: 80px;
+  			height: 50px;*/
   			padding: 10px;
   			border-radius: 4px;
-  			background-color: white;
+  			background-color: #F3FBFF;
+        opacity: .8;
   		}
 
   		#title {
-  			font-size: 36px;
-			margin-left: 2.5em;
-			margin-top:1.5em;
+  			font-size: 48px;
+			margin-left: 1.7em;
+			margin-top: 1.5em;
 			border-width: 2px;
 			color: #1620B1;
-			font-weight: bold;
+			/*font-weight: light;*/
+			font-family: 'Belgrano', serif;
   		}
 
   		#background {
-			margin-left: 4.5em;
+			margin-left: 4.7em;
 			margin-right:10.5em;
 			margin-top:.5em;
+			margin-bottom:3.5em;
 			border-width: 2px;
-			color: grey;
-			/*font-weight: bold;*/
-			font-size: 20px;
+			color: #4B4C49;
+			font-family: 'Playfair Display', serif;
+			font-weight: light;
+			font-size: 18px;
   		}
 	</style>
 </head>
@@ -53,8 +61,8 @@
 	Background:
 Approximately 70% of 1.3 billion people of Indian population live rural areas. Nearly 70% of rural population rely on solid fuel feedstock like coal and peat for their cooking needs. India contributes to 5% of human-sourced carbon dioxide emission; compared to China's 24 percent share. India's coal-fired, oil-fired and natural gas-fired thermal power plants are inefficient and offer significant potential for CO2 emission. Compared to the average emissions from coal-fired, oil-fired and natural gas-fired thermal power plants in European Union (EU-27) countries, India's thermal power plants emit 50 to 120 percent more CO2 per kWh produced.</p>
 	
-<svg id="emissions" width="1400" height="360"></svg>
-<svg id="pop" width="1400" height="360"></svg>
+<svg id="emissions" width="1380" height="360"></svg>
+<svg id="pop" width="1380" height="360"></svg>
 <div id="emissionsTooltip"></div>
 <div id="popTooltip"></div>
 
@@ -66,12 +74,18 @@ $("#emissions").mousemove(function(event)
   $("#popBar").remove();
   popBar(event.pageX);
   $('#emissionsTooltip').css({top: 400, left: event.pageX + 20, position:'absolute'});
-  $('#popTooltip').css({top: 800, left: event.pageX + 20, position:'absolute'});
+  $('#popTooltip').css({top: 900, left: event.pageX + 20, position:'absolute'});
   
   var emis = emissionsData.filter(d => { return century(d.year.getYear()) == year })[0]
   var pop = populationData.filter(d => { return century(d.year.getYear()) == year })[0]
-  $('#emissionsTooltip').html("<div>Other: " + emis.other +" <br/> Gas: " + emis.gas + " <br/> Liquid: " + emis.liquid + " <br/> Solid: " + emis.solid + " <br/>  </div>")
-  $('#popTooltip').html("<div>Population: " + pop.population + "</div>")
+
+
+  var emissionsHTML = "<div class=\"abc\"><p class=\"dataTitle\">Other <span class=\"otherColor\"></span></p><p class=\"dataValue\">"+emis.gas+"</p><p class=\"dataTitle\">Gas <span class=\"gasColor\"></span></p><p class=\"dataValue\">"+ emis.other + "</p><p class=\"dataTitle\">Liquid <span class=\"liquidColor\"></span></p><p class=\"dataValue\">"+emis.liquid+"</p><p class=\"dataTitle\">Solid <span class=\"solidColor\"></span></p><p class=\"dataValue\">"+emis.solid+"</p></div>"
+
+  var populationHTML = "<div class=\"abc\"><p class=\"dataTitle\">Population <span class=\"popColor\"></span></p><p class=\"dataValue\">"+pop.population+"</p></div>";
+
+  $('#emissionsTooltip').html(emissionsHTML);
+  $('#popTooltip').html(populationHTML);
 });
 $("#pop").mousemove(function(event)
 {
@@ -80,13 +94,25 @@ $("#pop").mousemove(function(event)
   $("#popBar").remove();
   popBar(event.pageX);
   $('#emissionsTooltip').css({top: 400, left: event.pageX + 20, position:'absolute'});
-  $('#popTooltip').css({top: 800, left: event.pageX + 20, position:'absolute'});
+  $('#popTooltip').css({top: 900, left: event.pageX + 20, position:'absolute'});
+
+
+   var emis = emissionsData.filter(d => { return century(d.year.getYear()) == year })[0]
+  var pop = populationData.filter(d => { return century(d.year.getYear()) == year })[0]
+
+
+  var emissionsHTML = "<div class=\"abc\"><p class=\"dataTitle\">Other <span class=\"otherColor\"></span></p><p class=\"dataValue\">"+emis.gas+"</p><p class=\"dataTitle\">Gas <span class=\"gasColor\"></span></p><p class=\"dataValue\">"+ emis.other + "</p><p class=\"dataTitle\">Liquid <span class=\"liquidColor\"></span></p><p class=\"dataValue\">"+emis.liquid+"</p><p class=\"dataTitle\">Solid <span class=\"solidColor\"></span></p><p class=\"dataValue\">"+emis.solid+"</p></div>"
+
+  var populationHTML = "<div class=\"abc\"><p class=\"dataTitle\">Population <span class=\"popColor\"></span></p><p class=\"dataValue\">"+pop.population+"</p></div>";
+
+  $('#emissionsTooltip').html(emissionsHTML);
+  $('#popTooltip').html(populationHTML);
 
 });
 var year, emissionsData, populationData;
 
 var svg1 = d3.select("#emissions"),
-    margin1 = {top: 20, right: 40, bottom: 30, left: 90},
+    margin1 = {top: 20, right: 60, bottom: 30, left: 140},
     width1 = svg1.attr("width") - margin1.left - margin1.right,
     height1 = svg1.attr("height") - margin1.top - margin1.bottom;
 
@@ -111,7 +137,7 @@ var g1 = svg1.append("g")
 function emissionsBar(x) {
   d3.select('#emissions').append('rect')
     .attr('id', 'emissionsBar')
-    .attr('height', height1+30)
+    .attr('height', height1+20)
     .attr('width', 2)
     .attr('x', x)
     .attr('y', 0);
@@ -120,7 +146,7 @@ function emissionsBar(x) {
 function popBar(x) {
   d3.select('#pop').append('rect')
     .attr('id', 'popBar')
-    .attr('height', height1)
+    .attr('height', height1-20)
     .attr('width', 2)
     .attr('x', x)
     .attr('y', margin1.bottom);
@@ -161,7 +187,7 @@ d3.csv("data/data.csv", type1, function(error, data) {
           var y = (f.data.year.toString()).split(' ')[3];
 		  if (xDate == y){
 		  	year = y
-			d3.select("#emissionsTooltip").html("<div>Other: " + f.data.other +" <br/> Gas: " + f.data.gas + " <br/> Liquid: " + f.data.liquid +  " <br/> Solid: " + f.data.solid +"</div>")
+			d3.select("#emissionsTooltip").html("<div class=\"abc\"><p class=\"dataTitle\">Other <span class=\"otherColor\"></span></p><p class=\"dataValue\">"+emis.gas+"</p><p class=\"dataTitle\">Gas <span class=\"gasColor\"></span></p><p class=\"dataValue\">"+ emis.other + "</p><p class=\"dataTitle\">Liquid <span class=\"liquidColor\"></span></p><p class=\"dataValue\">"+emis.liquid+"</p><p class=\"dataTitle\">Solid <span class=\"solidColor\"></span></p><p class=\"dataValue\">"+emis.solid+"</p></div>")
           }
         });
       })
@@ -186,7 +212,7 @@ d3.csv("data/data.csv", type1, function(error, data) {
 });
 
 var svg = d3.select("#pop"),
-    margin = {top: 20, right: 40, bottom: 30, left: 90},
+    margin = {top: 20, right: 60, bottom: 40, left: 140},
     width = svg.attr("width") - margin.left - margin.right,
     height = svg.attr("height") - margin.top - margin.bottom;
 
